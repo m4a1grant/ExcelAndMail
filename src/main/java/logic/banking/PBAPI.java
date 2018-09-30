@@ -23,13 +23,13 @@ public class PBAPI implements Banking{
     public DailyExchangeRate getDailyExchangeRate(Gson gson, String sURL, Map<String, String> queryParms ){
         Response response =  RestAssured.expect().statusCode(200).given()
                 .queryParameters(queryParms)
-                .log().all()
+                //.log().all()
                 .when()
                 .get(sURL)
                 .then().assertThat()
-                .log().all()
+                //.log().all()
                 .extract().response();
-        System.out.println(response.getBody().asString());
+        //System.out.println(response.getBody().asString());
         return gson.fromJson(response.getBody().asString(), DailyExchangeRate.class);
     }
 
