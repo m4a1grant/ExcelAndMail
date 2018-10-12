@@ -29,12 +29,12 @@ public class MailSender {
                         }
                     });
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("m4a1grant@gmail.com"));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipients.getProperty("0")));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipients.getProperty("1")));
-            message.setSubject("Testing Subject");
-            message.setText("Dear Mail Crawler," +
-                    "\n\n No spam to my email, please!");
+            message.setFrom(new InternetAddress(properties.getProperty("username")));
+            for (String mail : recipients.stringPropertyNames()){
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipients.getProperty(mail)));
+            }
+            message.setSubject("Exchange rates 2016-2017");
+            message.setText("Attached file consist PrivatBank exchange rates for available currencies.");
             MimeBodyPart bodyPart = new MimeBodyPart();
             bodyPart.attachFile(file);
             Multipart multipart = new MimeMultipart();
@@ -42,7 +42,7 @@ public class MailSender {
             message.setContent(multipart);
             Transport.send(message);
 
-            System.out.println("Done");
+            System.out.println("Done!");
 
         } catch (MessagingException e) {
             throw new RuntimeException(e);

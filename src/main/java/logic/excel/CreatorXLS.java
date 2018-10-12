@@ -72,7 +72,7 @@ public class CreatorXLS {
             row.createCell(SELL_COLUMN).setCellValue("Sell Rate");
             row.createCell(PURCHASE_COLUMN).setCellValue("Purchase Rate");
         }
-        System.out.println("Sheets created!");
+        System.out.println("----------------  Sheets created!  ----------------------");
         fillSheets(der);
     }
 
@@ -80,21 +80,29 @@ public class CreatorXLS {
     private void fillSheets(List<DailyExchangeRate> der){
         for(DailyExchangeRate temp : der){
             for (ExchangeRate er : temp.getExchangeRate()){
+
+
                 Sheet sheet = wb.getSheet(er.getCurrency());
                 if (sheet != null){
-                    Row row = sheet.createRow(sheet.getLastRowNum() + 1);
-                    row.createCell(DATE_COLUMN).setCellValue(temp.getDate());
-                    row.createCell(SELL_COLUMN).setCellValue(er.getSaleRate());
-                    row.createCell(PURCHASE_COLUMN).setCellValue(er.getPurchaseRate());
+                    if((Math.abs(er.getSaleRate() - 0) < 0.00000001d) || (Math.abs(er.getPurchaseRate() - 0) < 0.00000001d)){
+                        System.out.print("Sheet name: " + sheet.getSheetName() + "  ");
+                        Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+                        System.out.println("Row num:  " + row.getRowNum());
+                        row.createCell(DATE_COLUMN).setCellValue(temp.getDate());
+                        row.createCell(SELL_COLUMN).setCellValue(er.getSaleRate());
+                        row.createCell(PURCHASE_COLUMN).setCellValue(er.getPurchaseRate());
+                    }
+
                 }
             }
         }
+        System.out.println("----------------  Sheets fills!  ------------------------");
     }
 
     private void drawCharts(){
         for(Sheet sheet : wb){
             Drawing drawing = sheet.createDrawingPatriarch();
-            ClientAnchor anchor = drawing.createAnchor(0,0,0,0,5, 1, 20, 12);
+            ClientAnchor anchor = drawing.createAnchor(0,0,0,0,5, 1, 20, 15);
             Chart chart = drawing.createChart(anchor);
             ChartLegend legend = chart.getOrCreateLegend();
             legend.setPosition(LegendPosition.TOP_RIGHT);

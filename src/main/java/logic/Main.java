@@ -1,5 +1,6 @@
 package logic;
 
+import logic.banking.PBAPI;
 import logic.excel.CreatorXLS;
 import logic.mail.MailSender;
 
@@ -11,7 +12,7 @@ import java.io.IOException;
  */
 public class Main {
     private static final String FIRST_DATE = "01.01.2016";
-    private static final String LAST_DATE = "10.01.2016";
+    private static final String LAST_DATE = "31.03.2016";
     private static final String SENDER_SETTINGS = "settings\\SenderSettings.xml";
     private static final String RECIPIENTS = "settings\\Recipients.xml";
     private static final String FILE = "Result.xlsx";
@@ -19,6 +20,6 @@ public class Main {
     public static void main(String[] args) throws IOException, MessagingException {
         CreatorXLS creator = new CreatorXLS();
         creator.createXLS(FIRST_DATE, LAST_DATE, FILE);
-        MailSender.sendMail(SENDER_SETTINGS, RECIPIENTS, FILE);
+        //MailSender.sendMail(SENDER_SETTINGS, RECIPIENTS, FILE);
     }
 }
