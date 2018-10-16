@@ -5,6 +5,6 @@
     <entry key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</entry>
     <entry key="mail.smtp.auth">true</entry>
     <entry key="mail.smtp.port">465</entry>
-    <entry key="username">m4a1grant@gmail.com</entry>
-    <entry key="password">G342419rant</entry>
+    <entry key="username"></entry>
+    <entry key="password"></entry>
 </properties>
