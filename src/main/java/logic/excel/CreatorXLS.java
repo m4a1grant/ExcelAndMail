@@ -1,6 +1,7 @@
 package logic.excel;
 
 import com.google.gson.Gson;
+import jdk.internal.util.xml.impl.Input;
 import logic.banking.PBAPI;
 import logic.entity.DailyExchangeRate;
 import logic.entity.ExchangeRate;
@@ -12,10 +13,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.w3c.dom.ls.LSInput;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -36,26 +34,69 @@ public class CreatorXLS {
     private static final int PURCHASE_COLUMN = 2;
     private static final String FONT_NAME = "Arial";
     private static String DATE_FORMAT = "dd.MM.yyyy";
-    private static final String[] SHEET_NAMES = {"CAD", "CZK", "ILS", "JPY", "NOK", "CHF", "GBP", "USD", "EUR", "PLZ"};
+    private static final String[] SHEET_NAMES = {"CAD", "CZK", "ILS", "JPY", "NOK", "CHF", "GBP", "USD", "EUR", "PLZ", "RUB"};
     private static final String URL_EXCHANGE_RATES = "https://api.privatbank.ua/p24api/exchange_rates?json";
+    private static final String TEMPLATE_FILE = "settings\\Template.xls";
+
 
     Workbook wb;
 
-    public void createXLS (String firstDate, String lastDate, String fileName){
+    public void createXLS (String firstDate, String lastDate, String fileName) throws IOException{
+        try(InputStream in = new FileInputStream(TEMPLATE_FILE);
+            OutputStream out = new FileOutputStream(fileName)){
 
-        wb = new XSSFWorkbook();
-        createSheets(prepareData(firstDate, lastDate));
-        drawCharts();
-        try(OutputStream out = new FileOutputStream(fileName)){
+            wb = new HSSFWorkbook(in);
+            fillFile(firstDate, lastDate);
             wb.write(out);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void createSheets(List <DailyExchangeRate> der){
+    private List<String> getDates (String firstDate, String lastDate){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DATE_FORMAT);
+        LocalDate startDate = LocalDate.parse(firstDate, dtf);
+        LocalDate endDate = LocalDate.parse(lastDate, dtf);
+        List<String> dates = new ArrayList<>();
+        while (!startDate.isAfter(endDate)){
+            dates.add(startDate.format(dtf));
+            startDate = startDate.plusDays(1);
+        }
+        return dates;
+    }
+
+    private void fillFile(String firstDate, String lastDate){
+        List<String> dates = getDates(firstDate, lastDate);
+        PBAPI pb = new PBAPI();
+        dates.stream()
+                .map(x -> {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("date", x);
+                    return pb.getDailyExchangeRate(new Gson(), URL_EXCHANGE_RATES,
+                            params);
+                })
+                .peek(x -> System.out.println(x.getDate()))
+                .forEach(this::fillSheets);
+        ;
+
+    }
+
+    private void fillSheets(DailyExchangeRate der){
+        for (ExchangeRate er : der.getExchangeRate()){
+            if (er.getSaleRate() > 0 && er.getPurchaseRate() > 0){
+                Sheet sheet = wb.getSheet(er.getCurrency());
+                if (sheet != null){
+                    Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+                    row.createCell(DATE_COLUMN).setCellValue(der.getDate());
+                    row.createCell(SELL_COLUMN).setCellValue(er.getSaleRate());
+                    row.createCell(PURCHASE_COLUMN).setCellValue(er.getPurchaseRate());
+                }
+            }
+        }
+    }
+
+
+/*    private void createSheets(List <DailyExchangeRate> der){
         Sheet sheet;
         Row row;
         CellStyle style = wb.createCellStyle();
@@ -74,10 +115,10 @@ public class CreatorXLS {
         }
         System.out.println("Sheets created!");
         fillSheets(der);
-    }
+    }*/
 
 
-    private void fillSheets(List<DailyExchangeRate> der){
+/*    private void fillSheets(List<DailyExchangeRate> der){
         for(DailyExchangeRate temp : der){
             for (ExchangeRate er : temp.getExchangeRate()){
                 Sheet sheet = wb.getSheet(er.getCurrency());
@@ -89,9 +130,9 @@ public class CreatorXLS {
                 }
             }
         }
-    }
+    }*/
 
-    private void drawCharts(){
+/*    private void drawCharts(){
         for(Sheet sheet : wb){
             Drawing drawing = sheet.createDrawingPatriarch();
             ClientAnchor anchor = drawing.createAnchor(0,0,0,0,5, 1, 20, 12);
@@ -142,6 +183,6 @@ public class CreatorXLS {
                 .collect(Collectors.toList());
 
         return der;
-    }
+    }*/
 
 }
